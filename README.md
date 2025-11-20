@@ -27,11 +27,9 @@ without extra shims.
 npm install lz4-browser
 ```
 
-If you consume the sources directly inside this repo, install the dev
-dependencies and build artifacts once:
+If you are working from a clone of this repo:
 
 ```sh
-cd rebuild
 npm install
 npm run build
 ```
@@ -92,35 +90,48 @@ import { compress, uncompress } from 'lz4-browser/core/binding';
 
 ## Project scripts
 
-All scripts run from the `rebuild/` directory:
+All scripts run from the project root:
 
-| Script            | Description                                        |
-| ----------------- | -------------------------------------------------- |
-| `npm run dev`     | Launches the Vite browser demo in `examples/`.     |
-| `npm run build`   | Bundles the ESM distribution via tsup.             |
-| `npm run lint`    | ESLint (flat config) across sources and tests.     |
-| `npm test`        | Vitest suite (encoders, decoders, JS bindings).    |
-| `npm run bench`   | Tinybench-powered block benchmark.                 |
-| `npm run release` | Runs `np` to bump versions and publish to npm.     |
+| Script            | Description                                                        |
+| ----------------- | ------------------------------------------------------------------ |
+| `npm run dev`     | Launches the Vite playground under `examples/browser`.             |
+| `npm run build`   | Produces the ESM bundle and type declarations via tsup.            |
+| `npm run lint`    | ESLint (flat config) across sources, tests, and example scripts.   |
+| `npm test`        | Full Vitest suite (streaming, block, checksum, JS bindings, etc.). |
+| `npm run bench`   | Runs the Tinybench-powered block benchmark.                        |
+| `npm run release` | Triggers semantic-release (normally executed in CI).               |
+
+## Examples
+
+- **Browser demos** live in `examples/browser` (compress, decompress, and pure JS
+  binding playgrounds) and can be served via `npm run dev`.
+- **Node CLI utilities** live in `examples/node` (`compress-file.mjs`,
+  `decompress-file.mjs`, `block-playground.mjs`, and `js-binding.mjs`) to mirror
+  the legacy scripts with modern ESM/TypeScript bindings.
 
 ## Release flow
 
-Publishing uses [np](https://github.com/sindresorhus/np):
+Releases are fully automated via [semantic-release](https://semantic-release.gitbook.io/)
+and the `Release` GitHub Actions workflow (`.github/workflows/release.yml`). On
+every merge to `master`:
 
-```sh
-cd rebuild
-npm run lint && npm test && npm run build
-npm run release
-```
+1. CI runs lint, test, and build.
+2. semantic-release analyzes commit messages (Conventional Commit friendly, but
+   fallback rules ensure **every** commit is captured).
+3. Versions are bumped, `CHANGELOG.md` is rewritten (including an “All Commits”
+   section), and the package is published to npm.
+4. A Git tag and GitHub Release entry are created automatically, and the updated
+   changelog/`package.json` are pushed back to `master`.
 
-`np` will ensure the working tree is clean, run the checks again, update the
-version, tag the release, push to GitHub, and invoke `npm publish`.
+Maintainers can run `npm run release` locally if needed, but the recommended
+path is to rely on the CI pipeline so publishing stays reproducible.
 
 ## Continuous Integration
 
 GitHub Actions (`.github/workflows/ci.yml`) runs lint, tests, and builds on every
-push and pull request across Node 18, 20, and 22. The workflow reuses npm caches
-for fast turnaround and guarantees the published bundle matches CI output.
+push and pull request across Node 18, 20, and 22. A separate `release`
+workflow handles semantic-release publishing against the `production`
+environment, so npm tokens and GitHub releases stay managed in one place.
 
 ## Benchmarks
 
