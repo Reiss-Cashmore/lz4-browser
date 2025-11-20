@@ -1,3 +1,13 @@
+## [1.3.0](https://github.com/Reiss-Cashmore/lz4-browser/compare/v1.2.0...v1.3.0) (2025-11-20)
+
+### Features
+
+* **license:** Add MIT license ([7574cc6](https://github.com/Reiss-Cashmore/lz4-browser/commit/7574cc66b16757a1f2b50e2bd586b40d5b971491))
+
+
+### All Commits
+- feat(license): Add MIT license (7574cc6)
+
 ## [1.2.0](https://github.com/Reiss-Cashmore/lz4-browser/compare/v1.1.0...v1.2.0) (2025-11-20)
 
 ### Features
