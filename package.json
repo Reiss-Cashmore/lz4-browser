@@ -47,7 +47,7 @@
     "dist"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=12"
   },
   "dependencies": {
     "buffer": "^6.0.3",
