@@ -14,8 +14,8 @@
 
 * **docs:** Update documentation ([e070cc7](https://github.com/Reiss-Cashmore/lz4-browser/commit/e070cc71d2af620f5423eb035e1b39410129a3ac))
 
-
 ### All Commits
+
 - feat(docs): Update documentation (e070cc7)
 
 ## [1.1.0](https://github.com/Reiss-Cashmore/lz4-browser/compare/v1.0.1...v1.1.0) (2025-11-20)
@@ -23,6 +23,21 @@
 ### Features
 
 * **linting:** Linting ([6e1b436](https://github.com/Reiss-Cashmore/lz4-browser/commit/6e1b436acab643610f4f8793e1383fad1df2cb80))
+  
+## [1.0.1](https://github.com/Reiss-Cashmore/lz4-browser/compare/v0.5.3...v1.0.1) (2025-11-20)
+
+### All Commits
+- Rebuild the LZ4 library for modern JS environments
+- Adjsut CI for environment in github
+- Auto changelogging
+- Linting
+- Add a release CI
+- Linting
+- Fix CI Paths
+- feat(linting): Linting
+- feat(linting)
+- Missing dependency
+- feat(docs): Update documentation (e070cc7)
 
 0.5.3 / 2016-09-01
 ==================
