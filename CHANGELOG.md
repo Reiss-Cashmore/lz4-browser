@@ -1,3 +1,13 @@
+## [1.7.0](https://github.com/Reiss-Cashmore/lz4-browser/compare/v1.6.0...v1.7.0) (2025-11-20)
+
+### Features
+
+* **ci:** remove dependency ([a1e673c](https://github.com/Reiss-Cashmore/lz4-browser/commit/a1e673c0f40fd6bed4300efd1523c58659b133e6))
+
+
+### All Commits
+- feat(ci): remove dependency (a1e673c)
+
 ## [1.6.0](https://github.com/Reiss-Cashmore/lz4-browser/compare/v1.5.0...v1.6.0) (2025-11-20)
 
 ### Features
