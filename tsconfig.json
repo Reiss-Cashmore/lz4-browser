@@ -12,11 +12,27 @@
     "declaration": true,
     "declarationDir": "dist",
     "outDir": "dist",
-    "types": ["vitest/globals", "node"],
-    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "types": [
+      "vitest/globals",
+      "node"
+    ],
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ES2022"
+    ],
     "allowSyntheticDefaultImports": true,
     "verbatimModuleSyntax": true
   },
-  "include": ["src", "tests", "benchmark/**/*.ts", "tsup.config.ts", "vitest.config.ts", "vite.config.ts"],
-  "exclude": ["dist"]
+  "include": [
+    "src",
+    "tests",
+    "benchmark/**/*.ts",
+    "tsup.config.ts",
+    "vitest.config.ts",
+    "vite.config.ts"
+  ],
+  "exclude": [
+    "dist"
+  ]
 }
