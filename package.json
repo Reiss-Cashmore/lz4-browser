@@ -1,58 +1,73 @@
 {
-  "author": {
-    "name": "Pierre Curto"
-  },
-  "name": "lz4",
-  "description": "LZ4 streaming compression and decompression",
+  "name": "lz4-browser",
+  "version": "1.0.0",
+  "description": "Modern ESM rebuild of the LZ4 browser codec",
   "keywords": [
     "lz4",
     "compression",
     "decompression",
     "stream"
   ],
-  "version": "0.6.3",
-  "homepage": "http://github.com/pierrec/node-lz4",
+  "homepage": "https://github.com/Reiss-Cashmore/lz4-browser",
   "repository": {
     "type": "git",
-    "url": "git://github.com/pierrec/node-lz4.git"
+    "url": "git://github.com/Reiss-Cashmore/lz4-browser.git"
   },
-  "main": "./lib/lz4.js",
   "browser": "./build/lz4.js",
   "bugs": {
-    "url": "http://github.com/pierrec/node-lz4/issues"
+    "url": "http://github.com/Reiss-Cashmore/lz4-browser/issues"
   },
   "gypfile": true,
   "licenses": [
     {
       "type": "MIT",
-      "url": "http://github.com/pierrec/node-lz4/raw/master/LICENSE"
+      "url": "http://github.com/Reiss-Cashmore/lz4-browser/raw/master/LICENSE"
     }
   ],
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsup",
+    "test": "vitest --run",
+    "lint": "eslint .",
+    "bench": "tsx benchmark/block-bench.ts",
+    "release": "np"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "engines": {
-    "node": ">= 10.13"
+    "node": ">=18"
   },
   "dependencies": {
-    "buffer": "^5.2.1",
+    "buffer": "^6.0.3",
     "cuint": "^0.2.2",
-    "node-addon-api": "^3.2.1",
-    "xxhashjs": "^0.2.2"
+    "js-xxhash": "^5.0.1"
   },
   "devDependencies": {
-    "benchmark": "^1.0.0",
-    "browserify": "^16.2.3",
-    "jasmine-core": "^2.2.0",
-    "karma": "^0.12.31",
-    "karma-chrome-launcher": "^0.1.7",
-    "karma-cli": "0.0.4",
-    "karma-firefox-launcher": "^0.1.4",
-    "karma-jasmine": "^0.3.5",
-    "karma-mocha": "^0.1.10",
-    "minify": "^4.1.1",
-    "mocha": "^2.2.4"
+    "@eslint/js": "^9.39.1",
+    "@types/node": "^24.10.1",
+    "@typescript-eslint/eslint-plugin": "^8.47.0",
+    "@typescript-eslint/parser": "^8.47.0",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "np": "^10.2.0",
+    "tinybench": "^5.1.0",
+    "tsup": "^8.5.1",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.47.0",
+    "vite": "^7.2.4",
+    "vitest": "^4.0.10"
   },
-  "scripts": {
-    "test": "mocha",
-    "install": "node-gyp rebuild",
-    "prepublish": "./build.sh"
-  }
+  "prepublishOnly": "npm run build"
 }

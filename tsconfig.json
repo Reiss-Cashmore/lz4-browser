@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "noEmitOnError": true,
+    "declaration": true,
+    "declarationDir": "dist",
+    "outDir": "dist",
+    "types": ["vitest/globals", "node"],
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "allowSyntheticDefaultImports": true,
+    "verbatimModuleSyntax": true
+  },
+  "include": ["src", "tests", "benchmark/**/*.ts", "tsup.config.ts", "vitest.config.ts", "vite.config.ts"],
+  "exclude": ["dist"]
+}

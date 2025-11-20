@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LZ4 Browser Demo · JS Binding</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card">
+        <h1 class="heading">Pure JS Binding Benchmark</h1>
+        <p class="subheading">
+          Exercise the JavaScript fallback binding directly—no WASM, no native
+          addons. This mirrors the old `file_compressJS.js` example but with a
+          richer UI.
+        </p>
+
+        <label for="input">Input Text</label>
+        <textarea id="input" placeholder="Paste data to encode via JS binding"></textarea>
+
+        <div class="button-row">
+          <button id="encodeJS">Encode (JS binding)</button>
+          <button class="secondary" id="runBenchmark">Run JS Benchmark</button>
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <h4>Encoded Size</h4>
+            <p id="jsEncodedSize">–</p>
+          </div>
+          <div class="stat">
+            <h4>Decoded Size</h4>
+            <p id="jsDecodedSize">–</p>
+          </div>
+          <div class="stat">
+            <h4>Time</h4>
+            <p id="jsTime">–</p>
+          </div>
+        </div>
+
+        <label for="output">Decoded Output</label>
+        <textarea id="output" readonly></textarea>
+
+        <p class="note">
+          The pure JS binding is handy for deterministic output or environments
+          that restrict native bindings. It’s slower than the full encoder but
+          portable.
+        </p>
+      </div>
+    </div>
+
+    <script type="module">
+      import * as binding from '../../dist/core/binding.js';
+      import { Buffer } from 'buffer';
+      if (!window.Buffer) window.Buffer = Buffer;
+
+      const $ = (id) => document.getElementById(id);
+
+      function roundtrip(buffer) {
+        const max = binding.compressBound(buffer.length);
+        const encoded = Buffer.alloc(max);
+        const size = binding.compress(buffer, encoded);
+        const slice = encoded.subarray(0, size);
+
+        const decoded = Buffer.alloc(buffer.length);
+        const decodedSize = binding.uncompress(slice, decoded);
+
+        return {
+          encoded: slice,
+          decoded: decoded.subarray(0, decodedSize),
+          encodedSize: size,
+          decodedSize
+        };
+      }
+
+      $('encodeJS').addEventListener('click', () => {
+        const text = $('input').value ?? '';
+        const buffer = Buffer.from(text, 'utf8');
+        if (!buffer.length) {
+          resetStats();
+          $('output').value = '';
+          return;
+        }
+
+        const start = performance.now();
+        const { encoded, decoded, encodedSize, decodedSize } = roundtrip(buffer);
+        const duration = (performance.now() - start).toFixed(2);
+
+        $('output').value = decoded.toString('utf8');
+        $('jsEncodedSize').textContent = `${encodedSize.toLocaleString()} bytes`;
+        $('jsDecodedSize').textContent = `${decodedSize.toLocaleString()} bytes`;
+        $('jsTime').textContent = `${duration} ms`;
+      });
+
+      $('runBenchmark').addEventListener('click', () => {
+        const sample = Buffer.from('Lorem ipsum dolor sit amet, consectetur adipiscing elit.');
+        const start = performance.now();
+        for (let i = 0; i < 100; i++) {
+          roundtrip(sample);
+        }
+        const duration = (performance.now() - start).toFixed(2);
+        $('jsTime').textContent = `${duration} ms (100 runs)`;
+      });
+
+      function resetStats() {
+        $('jsEncodedSize').textContent = '–';
+        $('jsDecodedSize').textContent = '–';
+        $('jsTime').textContent = '–';
+      }
+    </script>
+  </body>
+</html>
+

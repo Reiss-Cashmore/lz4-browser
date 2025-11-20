@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LZ4 Browser Demo · Compress</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card">
+        <h1 class="heading">LZ4 Compression (Browser)</h1>
+        <p class="subheading">
+          Type anything below—text, JSON, even pasted binary converted to
+          base64—then compress it with the pure TypeScript implementation that
+          powers the new <code>lz4-browser</code> rebuild. No bundlers, no
+          Node-specific shims required.
+        </p>
+
+        <label for="input">Input (UTF-8)</label>
+        <textarea id="input" placeholder="Paste any text here"></textarea>
+
+        <div class="button-row">
+          <button id="encode">Compress</button>
+          <button class="secondary" id="clear">Clear</button>
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <h4>Original Size</h4>
+            <p id="inputSize">–</p>
+          </div>
+          <div class="stat">
+            <h4>Compressed Size</h4>
+            <p id="compressedSize">–</p>
+          </div>
+          <div class="stat">
+            <h4>Compression Ratio</h4>
+            <p id="ratio">–</p>
+          </div>
+        </div>
+
+        <label for="output">Compressed Output (Base64)</label>
+        <textarea
+          id="output"
+          placeholder="compressed output will appear here"
+          readonly
+        ></textarea>
+
+        <p class="note">
+          Tip: The encoded block is base64 encoded for readability. When piping
+          the Buffer elsewhere you can skip this step and keep using the raw
+          <code>Uint8Array</code>.
+        </p>
+      </div>
+    </div>
+
+    <script type="module">
+      import LZ4, { encodeBlock, encodeBound } from '../../dist/index.js';
+      import { Buffer } from 'buffer';
+
+      if (!window.Buffer) {
+        window.Buffer = Buffer;
+      }
+
+      const $ = (id) => document.getElementById(id);
+      const $input = $('input');
+      const $output = $('output');
+      const $inputSize = $('inputSize');
+      const $compressedSize = $('compressedSize');
+      const $ratio = $('ratio');
+
+      $('encode').addEventListener('click', () => {
+        const text = $input.value ?? '';
+        const buffer = Buffer.from(text, 'utf8');
+        if (!buffer.length) {
+          resetStats();
+          $output.value = '';
+          return;
+        }
+
+        const target = Buffer.alloc(encodeBound(buffer.length));
+        const start = performance.now();
+        const compressedSize = encodeBlock(buffer, target);
+        const duration = (performance.now() - start).toFixed(2);
+
+        const slice =
+          compressedSize > 0 ? target.subarray(0, compressedSize) : buffer;
+        const base64 = btoa(
+          String.fromCharCode(...new Uint8Array(slice.buffer, slice.byteOffset, slice.length))
+        );
+
+        $output.value = base64;
+        $inputSize.textContent = `${buffer.length.toLocaleString()} bytes`;
+        if (compressedSize > 0) {
+          $compressedSize.textContent = `${compressedSize.toLocaleString()} bytes (${duration}ms)`;
+          $ratio.textContent = `${(buffer.length / compressedSize).toFixed(2)}x`;
+        } else {
+          $compressedSize.textContent = 'Not compressible';
+          $ratio.textContent = '1.00x';
+        }
+      });
+
+      $('clear').addEventListener('click', () => {
+        $input.value = '';
+        $output.value = '';
+        resetStats();
+      });
+
+      function resetStats() {
+        $inputSize.textContent = '–';
+        $compressedSize.textContent = '–';
+        $ratio.textContent = '–';
+      }
+    </script>
+  </body>
+</html>
+

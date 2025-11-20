@@ -1,225 +1,133 @@
-# LZ4
+# lz4-browser
 
-[LZ4](http://fastcompression.blogspot.fr/) is a very fast compression and decompression algorithm. This nodejs module provides a Javascript implementation of the decoder as well as native bindings to the LZ4 functions. Nodejs Streams are also supported for compression and decompression.
+Fast, modern, browser-ready LZ4 compression primitives with full parity to the
+original `node-lz4` API. This rebuild ships a pure TypeScript core, ships ESM by
+default, and targets both synchronous usage and streaming TransformStreams so
+you can move buffers between Node.js, Service Workers, and modern browsers
+without extra shims.
 
-NB.
-Version 0.2 does not support the legacy format, only the one as of "LZ4 Streaming Format 1.4". Use version 0.1 if required.
+## Highlights
 
-## Build
+- ⚡️ **Native-quality performance in pure TypeScript** – block encoder/decoder
+  logic mirrors the reference implementation and includes the improved `js-xxhash`
+  streaming checksum pipeline.
+- 🌐 **Browser-first design** – ships as ESM, re-exports a Buffer shim, and uses
+  Web Streams (`TransformStream`) for async flows.
+- 🔁 **Drop-in API compatibility** – exposes `encode`, `decode`,
+  `createEncoderStream`, `createDecoderStream`, block helpers, and JS bindings
+  that match the original project, making migration effortless.
+- 🧪 **Comprehensive test suite** – Vitest replicas of the legacy mocha suite
+  ensure byte-for-byte parity (including tricky checksum cases and JS bindings).
+- 🛠️ **Modern tooling** – Vite playground, tsup bundling, Tinybench perf scripts,
+  np-powered releases, and GitHub Actions CI covering Node 18/20/22.
 
-With NodeJS:
+## Installation
 
-```shell
-git clone https://github.com/pierrec/node-lz4.git
-cd node-lz4
-git submodule update --init --recursive
+```sh
+npm install lz4-browser
+```
+
+If you consume the sources directly inside this repo, install the dev
+dependencies and build artifacts once:
+
+```sh
+cd rebuild
 npm install
+npm run build
 ```
 
-## Install
+## Quick start
 
-With NodeJS:
+```ts
+import { encode, decode } from 'lz4-browser';
 
-```shell
-npm install lz4
+const input = new TextEncoder().encode('Hello from LZ4!');
+const compressed = encode(Buffer.from(input));
+const restored = decode(compressed);
+
+console.log(new TextDecoder().decode(restored)); // "Hello from LZ4!"
 ```
 
-Within the browser, using `build/lz4.js`:
+### Streaming pipelines
 
-```html
-<script type="text/javascript" src="/path/to/lz4.js"></script>
-<script type="text/javascript">
-// Nodejs-like Buffer built-in
-var Buffer = require('buffer').Buffer
-var LZ4 = require('lz4')
+`TransformStream` support mirrors the Node.js stream helpers but works in any
+runtime with Web Streams:
 
-// Some data to be compressed
-var data = 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
-data += data
-// LZ4 can only work on Buffers
-var input = Buffer.from(data)
-// Initialize the output buffer to its maximum length based on the input data
-var output = Buffer.alloc( LZ4.encodeBound(input.length) )
+```ts
+import { createEncoderStream, createDecoderStream } from 'lz4-browser';
 
-// block compression (no archive format)
-var compressedSize = LZ4.encodeBlock(input, output)
-// remove unnecessary bytes
-output = output.slice(0, compressedSize)
+const encoder = createEncoderStream({ blockChecksum: true });
+const decoder = createDecoderStream();
 
-console.log( "compressed data", output )
-
-// block decompression (no archive format)
-var uncompressed = Buffer.alloc(input.length)
-var uncompressedSize = LZ4.decodeBlock(output, uncompressed)
-uncompressed = uncompressed.slice(0, uncompressedSize)
-
-console.log( "uncompressed data", uncompressed )
-</script>
+// Pipe readable input through encoder then decoder again
+await readable
+  .pipeThrough(encoder)
+  .pipeThrough(decoder)
+  .pipeTo(writable);
 ```
 
+### Block helpers
 
-From github cloning, after having made sure that node and node-gyp are properly installed:
+Need to work at the raw block level? Use the exposed bindings:
 
-```shell
-npm i
-node-gyp rebuild
+```ts
+import { encodeBlock, decodeBlock, encodeBound } from 'lz4-browser';
+
+const source = Buffer.from('raw block data');
+const target = Buffer.alloc(encodeBound(source.length));
+const blockSize = encodeBlock(source, target);
+
+const decoded = Buffer.alloc(source.length);
+const decodedSize = decodeBlock(target.subarray(0, blockSize), decoded);
 ```
 
-See below for more LZ4 functions.
+### Pure JS bindings
 
+When you specifically need the JavaScript fallback implementation (for
+diagnostics or deterministic output), import from `lz4-browser/core/binding`:
 
-## Usage
-
-### Encoding
-
-There are 2 ways to encode:
-
-* __asynchronous__ using nodejs Streams - slowest but can handle very large data sets (no memory limitations).
-* __synchronous__ by feeding the whole set of data - faster but is limited by the amount of memory
-
-
-#### Asynchronous encoding
-
-First, create an LZ4 encoding NodeJS stream with `LZ4#createEncoderStream(options)`.
-
-* `options` (_Object_): LZ4 stream options (optional)
-	* `options.blockMaxSize` (_Number_): chunk size to use (default=4Mb)
-	* `options.highCompression` (_Boolean_): use high compression (default=false)
-	* `options.blockIndependence` (_Boolean_): (default=true)
-	* `options.blockChecksum` (_Boolean_): add compressed blocks checksum (default=false)
-	* `options.streamSize` (_Boolean_): add full LZ4 stream size (default=false)
-	* `options.streamChecksum` (_Boolean_): add full LZ4 stream checksum (default=true)
-	* `options.dict` (_Boolean_): use dictionary (default=false)
-	* `options.dictId` (_Integer_): dictionary id (default=0)
-
-
-The stream can then encode any data piped to it. It will emit a `data` event on each encoded chunk, which can be saved into an output stream.
-
-The following example shows how to encode a file `test` into `test.lz4`.
-
-
-```javascript
-var fs = require('fs')
-var lz4 = require('lz4')
-
-var encoder = lz4.createEncoderStream()
-
-var input = fs.createReadStream('test')
-var output = fs.createWriteStream('test.lz4')
-
-input.pipe(encoder).pipe(output)
+```ts
+import { compress, uncompress } from 'lz4-browser/core/binding';
 ```
 
-#### Synchronous encoding
+## Project scripts
 
-Read the data into memory and feed it to `LZ4#encode(input[, options])` to decode an LZ4 stream.
+All scripts run from the `rebuild/` directory:
 
-* `input` (_Buffer_): data to encode
-* `options` (_Object_): LZ4 stream options (optional)
-	* `options.blockMaxSize` (_Number_): chunk size to use (default=4Mb)
-	* `options.highCompression` (_Boolean_): use high compression (default=false)
-	* `options.blockIndependence` (_Boolean_): (default=true)
-	* `options.blockChecksum` (_Boolean_): add compressed blocks checksum (default=false)
-	* `options.streamSize` (_Boolean_): add full LZ4 stream size (default=false)
-	* `options.streamChecksum` (_Boolean_): add full LZ4 stream checksum (default=true)
-	* `options.dict` (_Boolean_): use dictionary (default=false)
-	* `options.dictId` (_Integer_): dictionary id (default=0)
+| Script            | Description                                        |
+| ----------------- | -------------------------------------------------- |
+| `npm run dev`     | Launches the Vite browser demo in `examples/`.     |
+| `npm run build`   | Bundles the ESM distribution via tsup.             |
+| `npm run lint`    | ESLint (flat config) across sources and tests.     |
+| `npm test`        | Vitest suite (encoders, decoders, JS bindings).    |
+| `npm run bench`   | Tinybench-powered block benchmark.                 |
+| `npm run release` | Runs `np` to bump versions and publish to npm.     |
 
+## Release flow
 
-```javascript
-var fs = require('fs')
-var lz4 = require('lz4')
+Publishing uses [np](https://github.com/sindresorhus/np):
 
-var input = fs.readFileSync('test')
-var output = lz4.encode(input)
-
-fs.writeFileSync('test.lz4', output)
+```sh
+cd rebuild
+npm run lint && npm test && npm run build
+npm run release
 ```
 
+`np` will ensure the working tree is clean, run the checks again, update the
+version, tag the release, push to GitHub, and invoke `npm publish`.
 
-### Decoding
+## Continuous Integration
 
-There are 2 ways to decode:
+GitHub Actions (`.github/workflows/ci.yml`) runs lint, tests, and builds on every
+push and pull request across Node 18, 20, and 22. The workflow reuses npm caches
+for fast turnaround and guarantees the published bundle matches CI output.
 
-* __asynchronous__ using nodejs Streams - slowest but can handle very large data sets (no memory limitations)
-* __synchronous__ by feeding the whole LZ4 data - faster but is limited by the amount of memory
+## Benchmarks
 
-
-#### Asynchronous decoding
-
-First, create an LZ4 decoding NodeJS stream with `LZ4#createDecoderStream()`.
-
-
-The stream can then decode any data piped to it. It will emit a `data` event on each decoded sequence, which can be saved into an output stream.
-
-The following example shows how to decode an LZ4 compressed file `test.lz4` into `test`.
-
-
-```javascript
-var fs = require('fs')
-var lz4 = require('lz4')
-
-var decoder = lz4.createDecoderStream()
-
-var input = fs.createReadStream('test.lz4')
-var output = fs.createWriteStream('test')
-
-input.pipe(decoder).pipe(output)
-```
-
-#### Synchronous decoding
-
-Read the data into memory and feed it to `LZ4#decode(input)` to produce an LZ4 stream.
-
-* `input` (_Buffer_): data to decode
-
-
-```javascript
-var fs = require('fs')
-var lz4 = require('lz4')
-
-var input = fs.readFileSync('test.lz4')
-var output = lz4.decode(input)
-
-fs.writeFileSync('test', output)
-```
-
-## Block level encoding/decoding
-
-In some cases, it is useful to be able to manipulate an LZ4 block instead of an LZ4 stream. The functions to decode and encode are therefore exposed as:
-
-* `LZ4#decodeBlock(input, output[, startIdx, endIdx])` (_Number_) >=0: uncompressed size, <0: error at offset
-	* `input` (_Buffer_): data block to decode
-	* `output` (_Buffer_): decoded data block
-	* `startIdx` (_Number_): input buffer start index (optional, default=0)
-	* `endIdx` (_Number_): input buffer end index (optional, default=startIdx + input.length)
-* `LZ4#encodeBound(inputSize)` (_Number_): maximum size for a compressed block
-	* `inputSize` (_Number_) size of the input, 0 if too large
-	This is required to size the buffer for a block encoded data
-* `LZ4#encodeBlock(input, output[, startIdx, endIdx])` (_Number_) >0: compressed size, =0: not compressible
-	* `input` (_Buffer_): data block to encode
-	* `output` (_Buffer_): encoded data block
-	* `startIdx` (_Number_): output buffer start index (optional, default=0)
-	* `endIdx` (_Number_): output buffer end index (optional, default=startIdx + output.length)
-* `LZ4#encodeBlockHC(input, output[, compressionLevel])` (_Number_) >0: compressed size, =0: not compressible
-	* `input` (_Buffer_): data block to encode with high compression
-	* `output` (_Buffer_): encoded data block
-	* `compressionLevel` (_Number_): compression level between 3 and 12 (optional, default=9)
-
-
-Blocks do not have any magic number and are provided as is. It is useful to store somewhere the size of the original input for decoding.
-LZ4#encodeBlockHC() is not available as pure Javascript.
-
-
-## How it works
-
-* [LZ4 stream format](http://fastcompression.blogspot.fr/2011/05/lz4-explained.html)
-
-## Restrictions / Issues
-
-* `blockIndependence` property only supported for `true`
-
+Run `npm run bench -- --time 500` to compare block encode/decode throughput with
+buffer reuse vs. fresh allocations. The script loads `data/lorem_1mb.txt` by
+default and prints Tinybench summary tables.
 
 ## License
 
-MIT
+MIT © Reiss Cashmore and contributors

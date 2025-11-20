@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LZ4 Browser Demo · Decompress</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card">
+        <h1 class="heading">LZ4 Decompression (Browser)</h1>
+        <p class="subheading">
+          Paste a base64-encoded LZ4 block (for example from the compression tab)
+          and instantly recover the original payload—all within the browser,
+          using the same TypeScript decoder we ship to npm.
+        </p>
+
+        <label for="input">Compressed Block (Base64)</label>
+        <textarea
+          id="input"
+          placeholder="Paste your base64 LZ4 block here"
+        ></textarea>
+
+        <div class="button-row">
+          <button id="decode">Decompress</button>
+          <button class="secondary" id="clear">Clear</button>
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <h4>Compressed Size</h4>
+            <p id="compressedSize">–</p>
+          </div>
+          <div class="stat">
+            <h4>Recovered Size</h4>
+            <p id="decodedSize">–</p>
+          </div>
+          <div class="stat">
+            <h4>Decode Time</h4>
+            <p id="decodeTime">–</p>
+          </div>
+        </div>
+
+        <label for="output">Recovered Output (UTF-8)</label>
+        <textarea
+          id="output"
+          placeholder="decompressed output will appear here"
+          readonly
+        ></textarea>
+
+        <p class="note">
+          The decoder will coerce the block into a <code>Uint8Array</code> and
+          read it as UTF‑8. If your original data was binary, swap the final
+          <code>TextDecoder</code> with your own logic.
+        </p>
+      </div>
+    </div>
+
+    <script type="module">
+      import { decodeBlock, encodeBound } from '../../dist/index.js';
+      import { Buffer } from 'buffer';
+
+      if (!window.Buffer) {
+        window.Buffer = Buffer;
+      }
+
+      const $ = (id) => document.getElementById(id);
+      const $input = $('input');
+      const $output = $('output');
+      const $compressedSize = $('compressedSize');
+      const $decodedSize = $('decodedSize');
+      const $decodeTime = $('decodeTime');
+
+      function base64ToUint8Array(base64) {
+        const binary = atob(base64);
+        const length = binary.length;
+        const bytes = new Uint8Array(length);
+        for (let i = 0; i < length; i++) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+        return bytes;
+      }
+
+      $('decode').addEventListener('click', () => {
+        const base64 = ($input.value || '').trim();
+        if (!base64) {
+          resetStats();
+          $output.value = '';
+          return;
+        }
+
+        try {
+          const compressed = base64ToUint8Array(base64);
+          const target = Buffer.alloc(encodeBound(compressed.length) || compressed.length * 4);
+
+          const start = performance.now();
+          const decodedSize = decodeBlock(compressed, target);
+          const duration = (performance.now() - start).toFixed(2);
+
+          $output.value = Buffer.from(target.subarray(0, decodedSize)).toString('utf8');
+          $compressedSize.textContent = `${compressed.length.toLocaleString()} bytes`;
+          $decodedSize.textContent = `${decodedSize.toLocaleString()} bytes`;
+          $decodeTime.textContent = `${duration} ms`;
+        } catch (error) {
+          console.error(error);
+          $output.value = 'Unable to decode. Ensure the block is valid base64-encoded LZ4.';
+          resetStats();
+        }
+      });
+
+      $('clear').addEventListener('click', () => {
+        $input.value = '';
+        $output.value = '';
+        resetStats();
+      });
+
+      function resetStats() {
+        $compressedSize.textContent = '–';
+        $decodedSize.textContent = '–';
+        $decodeTime.textContent = '–';
+      }
+    </script>
+  </body>
+</html>
+
