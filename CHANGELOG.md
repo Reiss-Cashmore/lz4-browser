@@ -1,3 +1,13 @@
+## [1.6.0](https://github.com/Reiss-Cashmore/lz4-browser/compare/v1.5.0...v1.6.0) (2025-11-20)
+
+### Features
+
+* **ci:** target older platforms ([137c98d](https://github.com/Reiss-Cashmore/lz4-browser/commit/137c98d4caa1fc3b814e4dc1782dc00848d148ab))
+
+
+### All Commits
+- feat(ci): target older platforms (137c98d)
+
 ## [1.5.0](https://github.com/Reiss-Cashmore/lz4-browser/compare/v1.4.0...v1.5.0) (2025-11-20)
 
 ### Features
