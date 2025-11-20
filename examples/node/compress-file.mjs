@@ -4,10 +4,8 @@
  *
  * Usage: node compress-file.mjs path/to/input.txt [path/to/output.lz4]
  */
-import { createReadStream, createWriteStream } from 'node:fs';
-import { statSync } from 'node:fs';
+import { createReadStream, createWriteStream, statSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import LZ4 from '../../dist/index.js';
 
 const [, , inputArg, outputArg] = process.argv;
