@@ -1,3 +1,13 @@
+## [1.4.0](https://github.com/Reiss-Cashmore/lz4-browser/compare/v1.3.0...v1.4.0) (2025-11-20)
+
+### Features
+
+* **docs:** Changelog repairs ([3a286fe](https://github.com/Reiss-Cashmore/lz4-browser/commit/3a286fe6217b8b30109aca7acda30360aee17417))
+
+
+### All Commits
+- feat(docs): Changelog repairs (3a286fe)
+
 ## [1.3.0](https://github.com/Reiss-Cashmore/lz4-browser/compare/v1.2.0...v1.3.0) (2025-11-20)
 
 ### Features
