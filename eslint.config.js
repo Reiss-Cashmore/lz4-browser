@@ -20,5 +20,15 @@ export default tseslint.config(
       'no-bitwise': 'off'
     }
   },
+  {
+    files: ['examples/node/**/*.mjs'],
+    languageOptions: {
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        performance: 'readonly'
+      }
+    }
+  },
   prettierConfig
 );
