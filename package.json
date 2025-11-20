@@ -51,8 +51,7 @@
   },
   "dependencies": {
     "buffer": "^6.0.3",
-    "cuint": "^0.2.2",
-    "js-xxhash": "^5.0.1"
+    "cuint": "^0.2.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

@@ -1,4 +1,3 @@
-import { xxHash32 } from 'js-xxhash';
 import { readUInt32LE } from './byte-utils';
 
 const CHECKSUM_SEED = 0;
@@ -125,6 +124,12 @@ class XxHash32Context implements HashContext {
     this.acc4 = round(this.acc4, readUInt32LE(buffer, offset + 12));
   }
 }
+
+const xxHash32 = (bytes: Uint8Array, seed = CHECKSUM_SEED): number => {
+  const ctx = new XxHash32Context(seed);
+  ctx.update(bytes);
+  return ctx.digest() >>> 0;
+};
 
 export function descriptorChecksum(bytes: Uint8Array): number {
   const full = xxHash32(bytes, CHECKSUM_SEED) >>> 0;

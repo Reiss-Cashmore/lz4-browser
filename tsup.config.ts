@@ -6,7 +6,7 @@ export default defineConfig({
   dts: true,
   clean: true,
   sourcemap: true,
-  target: ['es2018', 'node12'],
+  target: ['es2015', 'node12'],
   treeshake: true,
   minify: false,
   splitting: false
