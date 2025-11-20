@@ -1,3 +1,9 @@
+## [1.1.0](https://github.com/Reiss-Cashmore/lz4-browser/compare/v1.0.1...v1.1.0) (2025-11-20)
+
+### Features
+
+* **linting:** Linting ([6e1b436](https://github.com/Reiss-Cashmore/lz4-browser/commit/6e1b436acab643610f4f8793e1383fad1df2cb80))
+
 0.5.3 / 2016-09-01
 ==================
 
