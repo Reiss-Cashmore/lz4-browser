@@ -32,7 +32,8 @@
     "test": "vitest --run",
     "lint": "eslint .",
     "bench": "tsx benchmark/block-bench.ts",
-    "release": "semantic-release"
+    "release": "semantic-release",
+    "prepublishOnly": "npm run build"
   },
   "exports": {
     ".": {
